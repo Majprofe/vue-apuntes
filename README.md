@@ -16,8 +16,11 @@ Existen dos tipos de APIs en Vue:
 - **Composition API** (introducida a partir de Vue 3)
 
 ## Crear un nuevo proyecto
+Para utilizar Vue sólo necesitamos enlazarlo en nuestra página desde cualquier CDN como:
 
-Puedes iniciar un proyecto de dos maneras:
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+Pero lo ideal es iniciar un proyecto, lo podemos hacer de dos maneras:
 
 ### 1. Vue CLI (Webpack)
 
@@ -125,6 +128,179 @@ Podemos sustituir v-bind: por : directamente, en el siguiente ejemplo vamos a ap
 ```
 ## Eventos
 
+Para declarar eventos lo haremos directamente sobre la etiqueta html que va a recibir el evento:
+```vue
+  <button v-on:click="saludar(mensaje)">Aceptar</button>
+```
+Lo realizaremos mediante la directiva v-on:click, que podemos sustituir por @click
+Ejemplo:
+```vue
+<script setup>
+  const miNombre = 'Manuel'
+  const miEdad = 18
+  const selector='azul'
+  const saludar = (nombre) => {
+    console.log(`Hola ${nombre}`)
+  }
+</script>
+
+<template>
+  <h1 :class="selector">
+    Hola, soy {{miNombre}} y tengo {{ miEdad+1 }}
+  </h1>
+  <button @click="saludar(miNombre)">Aceptar</button>
+</template>
+```
+## Reactividad
+Las variables reactivas son aquellas que se modifican en tiempo real, para poder crearlas tenemos que hacer uso de ref en Vue3.
+
+```vue
+<template>
+  <button @click="decremento">-</button>
+  <span>{{ contador }}</span>
+  <button @click="incremento">+</button>
+</template>
+  
+<script setup>
+  import { ref } from 'vue'
+  const contador = ref(0)
+  const decremento = () => {
+    contador.value--
+  }
+  const incremento = () => {
+    contador.value++
+  }
+</script>
+```
+Si lo que queremos declarar son objetos o arrays reactivos lo haremos con reactive en vez de ref.
+
+Para aplicar un color condicional según el valor de contador, siendo rojo<0, verde > 5 y azul entre 0 y 5:
+```vue
+<template>
+  <button @click="decremento">-</button>
+  <span :class="miColor">{{ contador }}</span>
+  <button @click="incremento">+</button>
+</template>
+  
+<script setup>
+import { ref } from 'vue'
+const miColor = ref('azul')
+  const contador = ref(0)
+  const decremento = () => {
+    contador.value--
+    if (contador.value<0){
+      miColor.value = 'rojo'
+    }
+  }
+  const incremento = () => {
+    contador.value++
+    if (contador.value>5){
+      miColor.value = 'verde'
+    }
+  }
+</script>
 
 
+<style scoped>
+span {
+  padding: 0 5px;
+}
+.rojo{
+  color: red;
+}
+.verde{
+  color: green;
+}
+.azul{
+  color: blue;
+}
+</style>
+```
 
+## v-if
+Con v-if podemos mostrar o no un elemento HTML en caso de que sea true o false la condición que evaluamos. Cuando estamos referenciando un variable en template, no necesitamos usar .value para acceder a su valor.
+```vue
+<div v-if="contador<0">Escribe una cantidad mayor de 0</div>
+<div v-else-if="contador>=5">Escribe una cantidad menor de 5</div>
+<div v-else>La cantidad es correcta</div>
+```
+
+### v-show
+Esta directiva oculta o muestra un elemento HTML, pero siempre va a existir ese elemento, no como v-if que sólo lo crea si es verdad la propiedad y sino no lo crea.
+
+```vue
+<template>
+  <button @click="decremento">-</button>
+  <span :class="miColor">{{ contador }}</span>
+  <button @click="incremento">+</button>
+  <div v-if="contador<0">Escribe una cantidad mayor de 0</div>
+  <div v-else>La cantidad es correcta</div>
+  <div v-show="visible">No está permitido el número 0</div>
+</template>
+  
+<script setup>
+import { ref } from 'vue'
+const visible = ref(true)
+const miColor = ref('azul')
+  const contador = ref(0)
+  const decremento = () => {
+    contador.value--
+    if (contador.value<0){
+      miColor.value = 'rojo'
+    }
+    visible.value = contador.value === 0
+  }
+  const incremento = () => {
+    contador.value++
+    if (contador.value>5){
+      miColor.value = 'verde'
+    }
+    visible.value = contador.value === 0
+  }
+</script>
+```
+
+## Propiedades computadas
+Función que se ejecuta cada vez que cambia alguno de los valores que analiza, es una función reactiva. Sólo se ejecuta cuando los valores que analiza han cambiado, en una función se ejecuta siempre que se llama a esa función. Una función computada siempre tiene que devolver algo.
+```vue
+<template>
+  <button @click="decremento">-</button>
+  <span :class="miColor">{{ contador }}</span>
+  <button @click="incremento">+</button>
+  <div v-if="contador<0">Escribe una cantidad mayor de 0</div>
+  <div v-else>La cantidad es correcta</div>
+  <div v-show="comprobacion">No está permitido el número 0</div>
+</template>
+  
+<script setup>
+import { ref, computed } from 'vue'
+const miColor = ref('azul')
+  const contador = ref(0)
+  const decremento = () => {
+    contador.value--
+    if (contador.value<0){
+      miColor.value = 'rojo'
+    }
+  }
+  const incremento = () => {
+    contador.value++
+    if (contador.value>5){
+      miColor.value = 'verde'
+    }
+  }
+  const comprobacion = computed (() => {
+    return contador.value === 0
+  })
+</script>
+```
+
+## Imágenes
+Todas las imágenes que están dentro de public no necesitan ser procesadas y se pueden poner directamente como ruta en el src de la etiqueta, pero fuera de esa carpeta tenemos que importarla:
+```vue
+import imagen from "./assets/log.svg"
+```
+## Importar datos
+Para importar datos lo haremos de la siguiente manera:
+```vue
+import {valores} from "./datos.js"
+```

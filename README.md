@@ -259,7 +259,27 @@ const miColor = ref('azul')
   }
 </script>
 ```
+## v-for
+Esta directiva repite el elemento HTML en que se encuentra una vez por cada elemento del array al que se enlaza.
 
+```vue
+  <ul>
+    <li v-for="elem in todos">
+      {{ elem.title}}
+    </li>
+  </ul>
+```
+Vue es más eficiente a la hora de renderizar si cada elemento que crea v-for tiene su propia clave, lo que se consigue con el atributo key. Podemos indicar como clave algún campo único del elemento o el índice:
+```vue
+<... v-for="(elem,index) in todos" :key="index" ...>
+```
+Pasar una key en cada v-for es recomendable ahora pero será obligatorio al usarlo en componentes así que conviene usarlo siempre.
+
+También podemos usar v-for para que se ejecute sobre un rango (como el típico for (i=0;i<10;i++)):
+```vue
+<span v-for="n in 10" :key="n"></span>
+```
+NOTA: No se recomienda usar v-for y v-if sobre el mismo elemento. Si se hace siempre se ejecuta primero el v-if.
 ## Propiedades computadas
 Función que se ejecuta cada vez que cambia alguno de los valores que analiza, es una función reactiva. Sólo se ejecuta cuando los valores que analiza han cambiado, en una función se ejecuta siempre que se llama a esa función. Una función computada siempre tiene que devolver algo.
 ```vue
@@ -303,4 +323,148 @@ import imagen from "./assets/log.svg"
 Para importar datos lo haremos de la siguiente manera:
 ```vue
 import {valores} from "./datos.js"
+```
+## Props
+Los props se utilizan para pasar parámetros de componentes padres a componentes hijos.
+Para ello primero debemos importar el componente hijo en el padre:
+import Hijo from './components/Hijo.vue'
+Y luego renderizar este componente incluyendo los parámetros que le vamos a pasar al hijo:
+<Hijo :nombre="nombre" :edad="edad" />
+En el componente hijo para poder recibir los parámetros tenemos que declararlos de la siguiente manera:
+const props = defineProps({
+    nombre: String,
+    edad: Number
+})
+
+El componente padre quedaría así:
+```vue
+<script setup>
+import {ref} from 'vue'
+import Hijo from './components/Hijo.vue'
+
+const nombre = ref('Manuel')
+const edad = ref(18)
+</script>
+
+<template>
+  <div>
+    <h1>Padre:</h1>
+    <Hijo :nombre="nombre" :edad="edad" />
+  </div>
+</template>
+```
+Y el componente hijo así:
+```vue
+<script setup>
+const props = defineProps({
+    nombre: String,
+    edad: Number
+})
+</script>
+
+<template>
+<div>
+    <h1>Hijo:</h1>
+    <h2>Te llamas {{ nombre }} y tienes {{ edad }} años</h2>
+</div>
+</template>
+```
+## Emits
+Se usan para pasar parámetros de componentes hijos a componentes padres, se realiza a través de un evento.
+Para ello creamos un evento en el componente hijo:
+<button @click="enviar">Cambiar valores</button>
+Y en la función declaramos qué emits vamos a pasarle, en este caso se llamará modificar y le pasará 2 valores:
+const emit=defineEmits(['modificar'])
+const enviar=()=>{
+    emit('modificar', 'Vue', 9)
+}
+En el padre tendremos que controlar ese paso de parámetros de la siguiente manera:
+<Hijo :nombre="nombre" :edad="edad" @modificar="cambiarValor"/>
+
+const cambiarValor = (valor1,valor2)=>{
+    nombre.value=valor1
+    edad.value=valor2
+}
+
+Quedando el código del hijo así:
+```vue
+<script setup>
+const props = defineProps({
+    nombre: String,
+    edad: Number
+})
+const emit=defineEmits(['modificar'])
+const enviar=()=>{
+    emit('modificar', 'Vue', 9)
+}
+</script>
+
+<template>
+<div>
+    <h1>Hijo:</h1>
+    <h2>Te llamas {{ nombre }} y tienes {{ edad }} años</h2>
+    <button @click="enviar">Cambiar valores</button>
+</div>
+</template>
+```
+Y el del padre así:
+```vue
+<script setup>
+import {ref} from 'vue'
+import Hijo from './components/Hijo.vue'
+
+const nombre = ref('Manuel')
+const edad = ref(18)
+
+const cambiarValor = (valor1,valor2)=>{
+    nombre.value=valor1
+    edad.value=valor2
+}
+</script>
+
+<template>
+  <div>
+    <h1>Padre:</h1>
+    <Hijo :nombre="nombre" :edad="edad" @modificar="cambiarValor"/>
+  </div>
+</template>
+```
+## Provide - Inyección
+Con este método podemos pasar datos entre componentes de una manera más sencilla. Usando la funcionalidad provide indicamos que variable va a pasarse al componente hijo, luego en el coponente hijo la capturamos con el método inject y se la asignamos a una variable.
+Componente padre:
+```vue
+<script setup>
+import {provide, ref} from 'vue'
+import Hijo2 from './components/Hijo2.vue'
+
+const ciclo = ref('DAW')
+
+provide('miCiclo',ciclo)
+</script>
+
+<template>
+  <div>
+    <h1>Padre:</h1>
+    <Hijo2/>
+  </div>
+</template>
+```
+Componente hijo:
+```vue
+<script setup>
+import { inject } from 'vue';
+const ciclohijo = inject('miCiclo') // Aqui ya tengo acceso a la variable ciclo del padre
+const modificar = () => {
+    ciclohijo.value = 'DAM'
+}
+</script>
+
+<template>
+    <div>
+        <h1>Hijo2:</h1>
+        <h2>{{ ciclohijo }}</h2>
+        <button @click="modificar">Cambiar</button>
+    </div>
+</template>
+
 ```

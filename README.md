@@ -53,7 +53,7 @@ Al crear el proyecto, se te pedirá configurar diferentes aspectos, como:
 
 En el archivo `main.js`, se importa el componente `App`, que es el punto de entrada para el renderizado. Puedes eliminar el archivo `main.css` si no necesitas esa hoja de estilos.
 
-##Componentes
+## Componentes
 
 Borraremos el contenido de App.vue para empezar a crear nuestro componente y todos los componentes que vienen preinstalados.
 
